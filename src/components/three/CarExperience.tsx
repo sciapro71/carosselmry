@@ -1,13 +1,20 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import {
+  Component,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import Link from "next/link";
 import { Canvas } from "@react-three/fiber";
 import { useProgress } from "@react-three/drei";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Phone, X, ChevronDown } from "lucide-react";
-import CarScene from "@/components/three/CarScene";
+import CarScene, { hasInlineModel } from "@/components/three/CarScene";
 import { carScroll, phaseFor, paintStep } from "@/components/three/state";
 import { business, paintColors, type Hotspot } from "@/config/site";
 
@@ -54,6 +61,32 @@ function HeroContent() {
 }
 
 /* ------------------------------------------------------------ */
+/* Garde-fou : si la 3D échoue (modèle, WebGL, sécurité du       */
+/* navigateur), on bascule sur le héro statique au lieu de       */
+/* laisser React démonter toute la page.                         */
+/* ------------------------------------------------------------ */
+
+class SceneErrorBoundary extends Component<
+  { onError: () => void; children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: unknown) {
+    console.error("Échec du rendu 3D, bascule sur la version statique :", error);
+    this.props.onError();
+  }
+
+  render() {
+    return this.state.hasError ? null : this.props.children;
+  }
+}
+
+/* ------------------------------------------------------------ */
 /* Expérience complète                                           */
 /* ------------------------------------------------------------ */
 
@@ -61,11 +94,15 @@ export default function CarExperience() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const [webglOk, setWebglOk] = useState<boolean | null>(null);
+  const [sceneFailed, setSceneFailed] = useState(false);
   const [inView, setInView] = useState(true);
   const [active, setActive] = useState<Hotspot | null>(null);
   const [colorId, setColorId] = useState<string>(paintColors[0].id);
   const { progress, active: loading } = useProgress();
-  const loaded = !loading && progress >= 100;
+  // En aperçu autonome, le modèle est décodé en mémoire : useProgress ne
+  // suit rien, on n'affiche donc pas l'écran de chargement.
+  const [inlineModel] = useState(() => hasInlineModel());
+  const loaded = inlineModel || (!loading && progress >= 100);
 
   /* Détection WebGL + préférence de mouvement réduit */
   useEffect(() => {
@@ -166,7 +203,7 @@ export default function CarExperience() {
   /* --------------------------------------------------------- */
   /* Fallback statique si WebGL indisponible                    */
   /* --------------------------------------------------------- */
-  if (webglOk === false) {
+  if (webglOk === false || sceneFailed) {
     return (
       <section id="accueil" aria-label="Présentation" className="bg-metal booth-light">
         <div className="flex min-h-screen items-center justify-center pt-24 pb-16">
@@ -192,6 +229,7 @@ export default function CarExperience() {
         {/* Scène 3D */}
         {webglOk && (
           <div className="absolute inset-0">
+            <SceneErrorBoundary onError={() => setSceneFailed(true)}>
             <Canvas
               dpr={[1, isMobile ? 1.5 : 2]}
               frameloop={inView ? "always" : "never"}
@@ -206,6 +244,7 @@ export default function CarExperience() {
                 <CarScene onSelect={setActive} quality={isMobile ? "low" : "high"} />
               </Suspense>
             </Canvas>
+            </SceneErrorBoundary>
           </div>
         )}
 

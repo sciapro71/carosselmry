@@ -7,11 +7,50 @@ import { ContactShadows, Environment, Html, Lightformer, useGLTF } from "@react-
 import { carScroll, ramp, smooth } from "@/components/three/state";
 import { hotspots, type Hotspot } from "@/config/site";
 
-/** URL du modèle — surchargée par l'aperçu autonome (GLB embarqué en data URI). */
-const MODEL_URL =
-  (typeof window !== "undefined" &&
-    (window as unknown as { __CAR_GLB__?: string }).__CAR_GLB__) ||
-  "/models/car.glb";
+const MODEL_URL = "/models/car.glb";
+
+/* ------------------------------------------------------------ */
+/* Mode aperçu autonome : le GLB est embarqué en base64 dans la  */
+/* page (window.__CAR_GLB_B64__) et décodé en mémoire, sans      */
+/* aucune requête réseau (la CSP de la page d'aperçu les bloque).*/
+/* ------------------------------------------------------------ */
+
+declare global {
+  interface Window {
+    __CAR_GLB_B64__?: string;
+  }
+}
+
+export function hasInlineModel(): boolean {
+  return typeof window !== "undefined" && !!window.__CAR_GLB_B64__;
+}
+
+type ParsedGltf = { scene: THREE.Group };
+let inlineGltf: ParsedGltf | null = null;
+let inlineError: unknown = null;
+let inlinePromise: Promise<void> | null = null;
+
+/** Hook Suspense : décode et parse le GLB embarqué (une seule fois). */
+function useInlineCarScene(): THREE.Group {
+  if (inlineError) throw inlineError;
+  if (inlineGltf) return inlineGltf.scene;
+  if (!inlinePromise) {
+    inlinePromise = (async () => {
+      // GLB d'aperçu non compressé Meshopt : décodage 100 % JavaScript,
+      // sans WebAssembly ni requête réseau (CSP stricte oblige).
+      const { GLTFLoader } = await import("three/examples/jsm/loaders/GLTFLoader.js");
+      const b64 = window.__CAR_GLB_B64__!;
+      const bin = atob(b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const loader = new GLTFLoader();
+      inlineGltf = (await loader.parseAsync(bytes.buffer, "")) as ParsedGltf;
+    })().catch((e) => {
+      inlineError = e;
+    });
+  }
+  throw inlinePromise;
+}
 
 /* ------------------------------------------------------------ */
 /* Trajectoire caméra                                            */
@@ -172,8 +211,23 @@ function HotspotMarkers({ onSelect }: { onSelect: (h: Hotspot) => void }) {
 const COLOR_ARRIVAL = new THREE.Color("#3d3d41"); // véhicule terne à l'arrivée
 const COLOR_PRIMER = new THREE.Color("#8f8f92"); // apprêt gris mat
 
-function CarModel({ onSelect }: { onSelect: (h: Hotspot) => void }) {
+function CarFromUrl({ onSelect }: { onSelect: (h: Hotspot) => void }) {
   const { scene } = useGLTF(MODEL_URL);
+  return <CarModel scene={scene} onSelect={onSelect} />;
+}
+
+function CarFromInline({ onSelect }: { onSelect: (h: Hotspot) => void }) {
+  const scene = useInlineCarScene();
+  return <CarModel scene={scene} onSelect={onSelect} />;
+}
+
+function CarModel({
+  scene,
+  onSelect,
+}: {
+  scene: THREE.Group;
+  onSelect: (h: Hotspot) => void;
+}) {
   const group = useRef<THREE.Group>(null);
   const inner = useRef<THREE.Group>(null);
   const chosen = useMemo(() => new THREE.Color(carScroll.colorHex), []);
@@ -275,7 +329,9 @@ function CarModel({ onSelect }: { onSelect: (h: Hotspot) => void }) {
   );
 }
 
-useGLTF.preload(MODEL_URL);
+if (typeof window === "undefined" || !window.__CAR_GLB_B64__) {
+  useGLTF.preload(MODEL_URL);
+}
 
 /* ------------------------------------------------------------ */
 /* Éclairage d'atelier                                           */
@@ -342,7 +398,11 @@ export default function CarScene({
       <CameraRig />
       <StudioLights />
       <DiagnosticSweep />
-      <CarModel onSelect={onSelect} />
+      {hasInlineModel() ? (
+        <CarFromInline onSelect={onSelect} />
+      ) : (
+        <CarFromUrl onSelect={onSelect} />
+      )}
 
       {/* Sol d'atelier */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.005, 0]}>

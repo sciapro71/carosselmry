@@ -30,3 +30,4 @@ next-env.d.ts
 
 # aperçu généré (regénérable via node preview/build.mjs)
 /preview/carrosserie-lomrye-apercu.html
+/preview/car-preview.glb

@@ -6,7 +6,13 @@ import fs from "node:fs";
 const content = fs.readFileSync("preview/carrosserie-lomrye-apercu.html", "utf8");
 const page_ = `<!doctype html><html><head></head><body>${content}</body></html>`;
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  res.writeHead(200, {
+    "Content-Type": "text/html; charset=utf-8",
+    // Simule la CSP stricte de la page d'artefact : aucun fetch externe
+    // ni data:, uniquement scripts/styles inline et Google Fonts.
+    "Content-Security-Policy":
+      "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src data: blob:; connect-src 'self'",
+  });
   res.end(page_);
 });
 await new Promise((r) => server.listen(4600, r));

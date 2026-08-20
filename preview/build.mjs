@@ -43,9 +43,14 @@ execSync(
 );
 const css = fs.readFileSync(out(".styles.css"), "utf8");
 
-/* 3. Modèle 3D en data URI */
-const glb = fs.readFileSync(path.join(root, "public", "models", "car.glb"));
-const glbUri = `data:model/gltf-binary;base64,${glb.toString("base64")}`;
+/* 3. Modèle 3D embarqué en base64 — variante SANS Meshopt (pas de WASM),
+      générée par scripts/optimize-model.mjs */
+const glbPath = out("car-preview.glb");
+if (!fs.existsSync(glbPath)) {
+  console.error("preview/car-preview.glb manquant : lancez d'abord `node scripts/optimize-model.mjs`");
+  process.exit(1);
+}
+const glbB64 = fs.readFileSync(glbPath).toString("base64");
 
 /* 4. Assemblage — le squelette <html>/<head>/<body> est ajouté à la
       publication de l'artefact : on écrit uniquement le contenu. */
@@ -62,7 +67,7 @@ html, body { margin: 0; padding: 0; background: #090909; }
 ${css}
 </style>
 <div id="root"></div>
-<script>window.__CAR_GLB__ = ${JSON.stringify(glbUri)};</script>
+<script>window.__CAR_GLB_B64__ = ${JSON.stringify(glbB64)};</script>
 <script>${js.replace(/<\/script>/gi, "<\\/script>")}</script>
 `;
 

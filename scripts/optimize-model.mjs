@@ -37,6 +37,14 @@ await doc.transform(
   prune()
 );
 
+/* Variante pour l'aperçu autonome : même géométrie, mais SANS compression
+   Meshopt — le décodage Meshopt exige du WebAssembly, interdit par la CSP
+   de la page d'aperçu. La quantisation (KHR_mesh_quantization) reste :
+   elle est décodée nativement par GLTFLoader. */
+const PREVIEW_OUTPUT = path.join(root, "preview", "car-preview.glb");
+fs.mkdirSync(path.dirname(PREVIEW_OUTPUT), { recursive: true });
+await io.write(PREVIEW_OUTPUT, doc);
+
 doc.createExtension(EXTMeshoptCompression).setRequired(true);
 
 fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
@@ -44,4 +52,6 @@ await io.write(OUTPUT, doc);
 
 const before = fs.statSync(INPUT).size;
 const after = fs.statSync(OUTPUT).size;
+const preview = fs.statSync(PREVIEW_OUTPUT).size;
 console.log(`OK : ${(before / 1e6).toFixed(1)} Mo → ${(after / 1e6).toFixed(1)} Mo (${OUTPUT})`);
+console.log(`Aperçu sans Meshopt : ${(preview / 1e6).toFixed(1)} Mo (${PREVIEW_OUTPUT})`);
