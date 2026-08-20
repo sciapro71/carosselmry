@@ -1,0 +1,422 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CHARTE COULEURS — CARROSSERIE LOMRYE
+   Orange / noir / blanc, gris métal en secondaire uniquement.
+   (Valeurs de référence : aucune source vectorielle du logo
+   n'étant disponible dans le dépôt, ajuster ici si besoin.)
+   ============================================================ */
+:root {
+  --color-brand-orange: #f36b21;
+  --color-brand-orange-hover: #ff7d33;
+  --color-brand-orange-deep: #c9531a;
+  --color-brand-black: #090909;
+  --color-brand-coal: #111112;
+  --color-brand-graphite: #1a1a1c;
+  --color-brand-white: #f7f6f2;
+  --color-brand-paper: #efede7;
+  --color-brand-steel: #9a9a9a;
+  --color-brand-steel-dark: #55555a;
+}
+
+@theme inline {
+  --color-orange: var(--color-brand-orange);
+  --color-orange-hover: var(--color-brand-orange-hover);
+  --color-orange-deep: var(--color-brand-orange-deep);
+  --color-night: var(--color-brand-black);
+  --color-coal: var(--color-brand-coal);
+  --color-graphite: var(--color-brand-graphite);
+  --color-ivory: var(--color-brand-white);
+  --color-paper: var(--color-brand-paper);
+  --color-steel: var(--color-brand-steel);
+  --color-steel-dark: var(--color-brand-steel-dark);
+
+  --font-sans: var(--font-archivo), system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-archivo-black), var(--font-archivo), system-ui, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Les ancres ne doivent pas se cacher sous l'en-tête fixe */
+section[id],
+[id="devis"] {
+  scroll-margin-top: 5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background: var(--color-brand-black);
+  color: var(--color-brand-white);
+  font-family: var(--font-archivo), system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-brand-orange);
+  color: var(--color-brand-black);
+}
+
+/* Focus visible accessible sur fond clair comme foncé */
+:focus-visible {
+  outline: 3px solid var(--color-brand-orange);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ============================================================
+   Composants récurrents
+   ============================================================ */
+
+@layer components {
+/* Titre de section — typographie puissante, esprit atelier */
+.section-title {
+  font-family: var(--font-archivo-black), var(--font-archivo), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+}
+
+/* Étiquette orange au-dessus des titres */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-brand-orange);
+}
+.kicker::before {
+  content: "";
+  width: 2.25rem;
+  height: 2px;
+  background: var(--color-brand-orange);
+}
+
+/* Bouton principal orange */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--color-brand-orange);
+  color: #fff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.95rem 1.75rem;
+  border-radius: 4px;
+  min-height: 48px;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 24px -10px rgba(243, 107, 33, 0.65);
+}
+.btn-primary:hover {
+  background: var(--color-brand-orange-hover);
+  box-shadow: 0 12px 30px -10px rgba(243, 107, 33, 0.8);
+}
+.btn-primary:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+/* Bouton secondaire — contour, fond sombre */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(247, 246, 242, 0.35);
+  color: var(--color-brand-white);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.95rem 1.75rem;
+  border-radius: 4px;
+  min-height: 48px;
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.15s ease;
+}
+.btn-ghost:hover {
+  border-color: var(--color-brand-orange);
+  background: rgba(243, 107, 33, 0.08);
+}
+.btn-ghost:active {
+  transform: translateY(1px);
+}
+
+/* Bouton secondaire sur fond clair */
+.btn-ghost-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1.5px solid rgba(9, 9, 9, 0.7);
+  color: var(--color-brand-black);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.95rem 1.75rem;
+  border-radius: 4px;
+  min-height: 48px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+.btn-ghost-dark:hover {
+  border-color: var(--color-brand-orange);
+  color: var(--color-brand-orange-deep);
+}
+
+/* Texture métal brossé très subtile pour les fonds sombres */
+.bg-metal {
+  background-color: var(--color-brand-black);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(243, 107, 33, 0.07), transparent 60%),
+    repeating-linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 6px
+    );
+}
+
+/* Halo type "cabine de peinture" */
+.booth-light {
+  position: relative;
+}
+.booth-light::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 70% 45% at 50% 0%,
+    rgba(247, 246, 242, 0.05),
+    transparent 65%
+  );
+}
+
+/* Carte sombre avec profondeur légère */
+.card-dark {
+  background: linear-gradient(160deg, var(--color-brand-graphite), var(--color-brand-coal));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+@media (hover: hover) {
+  .card-dark:hover {
+    transform: translateY(-4px);
+    border-color: rgba(243, 107, 33, 0.45);
+    box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Révélation au scroll (pilotée par GSAP — état initial neutre si JS off) */
+.reveal {
+  opacity: 1;
+}
+
+/* Champs de formulaire */
+.field-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-brand-steel-dark);
+  margin-bottom: 0.4rem;
+}
+.field-input {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #d8d5cd;
+  border-radius: 6px;
+  padding: 0.8rem 1rem;
+  min-height: 48px;
+  color: var(--color-brand-black);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.field-input:focus {
+  outline: none;
+  border-color: var(--color-brand-orange);
+  box-shadow: 0 0 0 3px rgba(243, 107, 33, 0.18);
+}
+.field-input[aria-invalid="true"] {
+  border-color: #c0392b;
+}
+.field-error {
+  color: #b03024;
+  font-size: 0.82rem;
+  margin-top: 0.35rem;
+  font-weight: 600;
+}
+
+/* Masquage accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+}
+
+/* ============================================================
+   Expérience 3D — états pilotés par data-phase / data-paint
+   ============================================================ */
+
+/* Le trait décoratif du kicker héro gêne le centrage sur petit écran */
+@media (max-width: 639px) {
+  .hero-kicker::before {
+    display: none;
+  }
+}
+
+/* Héro : visible uniquement en phase "hero" */
+.car-stage .overlay-hero {
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.car-stage:not([data-phase="hero"]) .overlay-hero {
+  opacity: 0;
+  transform: translateY(-18px);
+  pointer-events: none !important;
+}
+.car-stage:not([data-phase="hero"]) .overlay-hero * {
+  pointer-events: none !important;
+}
+
+/* Légendes d'étapes */
+.caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+@media (min-width: 640px) {
+  .caption {
+    right: auto;
+  }
+}
+.car-stage[data-phase="scan"] .caption-scan,
+.car-stage[data-phase="hotspots"] .caption-hotspots,
+.car-stage[data-phase="paint"] .caption-paint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Sous-étapes peinture */
+.car-stage[data-paint="0"] .paint-chip[data-step="0"],
+.car-stage[data-paint="1"] .paint-chip[data-step="1"],
+.car-stage[data-paint="2"] .paint-chip[data-step="2"] {
+  border-color: var(--color-brand-orange);
+  color: var(--color-brand-orange);
+  background: rgba(243, 107, 33, 0.1);
+}
+
+/* Écran final */
+.car-stage .overlay-final {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.car-stage:not([data-phase="final"]) .overlay-final,
+.car-stage:not([data-phase="final"]) .overlay-final * {
+  pointer-events: none !important;
+}
+.car-stage[data-phase="final"] .overlay-final {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Points interactifs sur la voiture */
+.hotspot-wrapper {
+  z-index: 15;
+}
+.hotspot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+  cursor: pointer;
+}
+.car-stage[data-phase="hotspots"] .hotspot,
+.car-stage[data-phase="final"] .hotspot {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.hotspot-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-brand-orange);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 12px rgba(243, 107, 33, 0.8);
+}
+.hotspot-ring {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(243, 107, 33, 0.7);
+  animation: hotspot-pulse 2.2s ease-out infinite;
+}
+@keyframes hotspot-pulse {
+  0% {
+    transform: scale(0.6);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hotspot-ring {
+    animation: none;
+  }
+  .overlay-hero .animate-bounce {
+    animation: none;
+  }
+}
+
+/* Scrollbar discrète sur desktop */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-brand-black);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2a2a2e;
+    border-radius: 5px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-brand-orange-deep);
+  }
+}
