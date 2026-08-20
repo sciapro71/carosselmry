@@ -7,7 +7,11 @@ import { ContactShadows, Environment, Html, Lightformer, useGLTF } from "@react-
 import { carScroll, ramp, smooth } from "@/components/three/state";
 import { hotspots, type Hotspot } from "@/config/site";
 
-const MODEL_URL = "/models/car.glb";
+/** URL du modèle — surchargée par l'aperçu autonome (GLB embarqué en data URI). */
+const MODEL_URL =
+  (typeof window !== "undefined" &&
+    (window as unknown as { __CAR_GLB__?: string }).__CAR_GLB__) ||
+  "/models/car.glb";
 
 /* ------------------------------------------------------------ */
 /* Trajectoire caméra                                            */

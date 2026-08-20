@@ -27,3 +27,6 @@ next-env.d.ts
 
 # captures de test locales
 /screenshots
+
+# aperçu généré (regénérable via node preview/build.mjs)
+/preview/carrosserie-lomrye-apercu.html
